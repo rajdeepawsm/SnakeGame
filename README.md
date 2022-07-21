@@ -14,9 +14,26 @@ A simple Snake Game using HTML/CSS and JavaScript.
 2. Move down using downward arrow.
 3. Its game over when you touch the walls.
 
-Deployment :- 
+## Deployment :- 
 
 The source file index.html is deployed using Heroku.com.
 
+We had to create two files in order to deploy to heroku namely "composter.json" and "index.php".
+
+composter.json 
+   
+           {}
+           
+index.php
+
+           <?php include_once("index.html"); ?>
 
 
+Adding git directory to heroku
+ 
+           heroku login
+           heroku git:remote snake-game-html
+           git push heroku master
+           git add . 
+           git commit -m "your commit message" 
+           git push heroku master
