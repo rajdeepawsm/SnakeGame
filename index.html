@@ -1,0 +1,283 @@
+ <!DOCTYPE html>
+ <html lang="en">
+     <head>
+         <meta charset="UTF-8" >
+         <meta http-equiv="X-UA-Compatible" content = "IE=edge">
+         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+         <title>CAUTION: Snake Ahead</title>
+         <style>
+             *{
+                 padding: 0;
+                 margin:0;
+              }
+             .body{
+                 background: url("../bg.jpg");
+                 min-height: 100vh;
+                 background-size: 100vw 100vh;
+                 background-repeat: no-repeat;
+                 display: flex;
+                 justify-content: center;
+                 align-items: center ;
+             }
+             
+             #board{
+                 background: linear-gradient(black,grey);
+                 width: 80vmin;
+                 height: 82vmin;
+                 border: 2px solid white;
+                 display: grid;
+                 grid-template-rows: repeat(18,1fr) ;
+                 grid-template-columns: repeat(18,1fr);
+
+             }
+             #scoreBox{
+                position: absolute;
+                font-display: white;
+                top:9px;
+                right: 200px;
+                font-size:39px;
+                font-weight: bold;
+             }
+             #highScore{
+                position: absolute;
+                font-display: white;
+                top:59px;
+                right: 70px;
+                font-size:39px;
+                font-weight: bold;
+             }
+             
+
+
+             .head{
+                 background: linear-gradient(blue,white);
+                 border: 2px solid darkbl  ue;
+                 transform: scale(1.50);
+                 border-radius: 9px;
+             }
+             
+             .snake{
+                 background-color: purple;
+                 border: .25vmin solid white;
+                 border-radius: 12px;
+             }
+
+
+             .food{
+                 background: linear-gradient(red,purple);
+                 border: .25vmin solid black;
+                 border-radius: 8px;
+             }
+
+         </style>
+
+     </head>
+     <body>
+         <div class = "body">
+             <div id = "scoreBox">Score: 0</div>
+             <div id = "highScore"> Highest Score: 0</div>
+             <div id = "board"></div>
+         </div>
+     <script >
+
+       //Game Constants & variables  
+       let inputDir = {x: 0 , y: 0};
+       let foodSound = new Audio('../Snake.mp3');
+       let gameOverSound = new Audio('../sfx-defeat2.mp3')
+       let moveSound = new Audio('../mSound.mp3');
+       let musicSound = new Audio('../SnakeGame.mp3');
+       let eatingSound = new Audio('../foodeating.mp3');
+       let crashSound = new Audio('../csh.mp3');
+       let speed = 9;
+       let score = 0;
+       let lastPaintTime = 0;
+       let snakeArr = [
+           {x : 13, y: 15} 
+       ]
+
+       food = {x:6 , y: 7};
+
+
+       //GameFunctions
+       
+       function main(ctime){
+       window.requestAnimationFrame(main);
+       if((ctime - lastPaintTime)/1000 < 1/speed)
+       {
+           return;
+       }
+       
+       lastPaintTime = ctime;
+       //console.log(ctime);
+       gameEngine();
+
+       }
+
+       function isCollide(sarr)
+       {
+           //if you bumb into yourself
+           for(let i = 1;i < snakeArr.length;i++)
+           {
+                if(snakeArr[i].x === snakeArr[0].x && snakeArr[i].y === snakeArr[0].y)
+                {
+                    crashSound.play();
+                    return true;
+                }
+                
+                //
+                if((snakeArr[0].x >= 18 || snakeArr[0].x <= 0) || (snakeArr[0].y >= 18 || snakeArr[0].y <= 0))
+                {
+                    crashSound.play();
+                    return true;
+                }
+
+
+           }
+       }
+
+       function gameEngine(){
+           //Part-1: Updating the snake array
+            if(isCollide(snakeArr))
+            {
+                gameOverSound.play();
+                musicSound.pause();
+                inputDir = {x: 0, y: 0};
+                musicSound.play();
+                alert("Game Over. Press any key to play again!");
+                snakeArr = [{x:13, y: 15}];
+                score = 0;
+
+            }
+
+            //if you have eaten the foood, increment the score and regenarate the food
+            if(snakeArr[0].y== food.y && snakeArr[0].x == food.x)
+            {
+                eatingSound.play();
+                score+=1;
+                if(score > hiscoreval)
+                {
+                    hiscoreval = score;
+                    localStorage.setItem("highScore", JSON.stringify(hiscoreval));
+                    highScore.innerHTML = "Highest Score : " + hiscoreval; 
+                }
+                scoreBox.innerHTML = "Score: " + score;
+                snakeArr.unshift({x:snakeArr[0].x + inputDir.x,y:snakeArr[0].y + inputDir.y});
+                let a = 2;
+                let b = 16;
+                food = {x: Math.round(a + (b-a)*Math.random()), y:Math.round(a + (b-a)*Math.random())}
+                
+            }
+
+            for(let i = snakeArr.length - 2;i>=0;i--)
+            {
+                snakeArr[i+1] = {...snakeArr[i]};
+            }
+      
+            snakeArr[0].x +=inputDir.x;
+            snakeArr[0].y +=inputDir.y;
+
+           //Part-2: Display the snake 
+
+           board.innerHTML = "";
+           snakeArr.forEach((e, index)=>{
+                  snakeElement = document.createElement('div');
+                  snakeElement.style.gridRowStart = e.y;
+                  snakeElement.style.gridColumnStart = e.x;
+                  
+                  if(index == 0)
+                  {
+                     snakeElement.classList.add('head');
+                  }
+                  else
+                  {
+                    snakeElement.classList.add('snake');
+                  }
+
+                  board.appendChild(snakeElement);
+           });
+
+           //Display the food
+           
+                 foodElement = document.createElement('div');
+                 foodElement.style.gridRowStart = food.y;
+                 foodElement.style.gridColumnStart = food.x;
+                 foodElement.classList.add('food'); 
+                 board.appendChild(foodElement);
+
+
+
+
+
+
+       }
+
+       let hiscore = localStorage.getItem("highScore");
+       
+       if(hiscore===null)
+       {
+        let hiscoreval = 0;
+        localStorage.setItem("highScore",JSON.stringify(hiscoreval));
+       }
+       else{
+           hiscoreval = JSON.parse(hiscore);
+           highScore.innerHTML = "Highest Score : " + hiscoreval; 
+       }
+
+        
+
+
+       window.requestAnimationFrame(main);
+       window.addEventListener('keydown',e=>{
+           inputDir = {x : 0,y : 1} //start the game
+           moveSound.play();
+           let prev = "";
+           switch(e.key)
+           {
+               case "ArrowUp":
+                     if(prev=="ArrowDown")
+                     {
+                         break;
+                     }
+                     console.log("ArrowUp");
+                     inputDir.x = 0;
+                     inputDir.y = -1;
+                     prev = "ArrowUp";
+                     break;
+               case "ArrowDown":
+                     if(prev=="ArrowUp")
+                     {
+                         break;
+                     }
+                     console.log("ArrowDown");
+                     inputDir.x = 0;
+                     inputDir.y = 1;
+                     prev = "ArrowDown";
+                     break;
+              case "ArrowLeft":
+                    if(prev=="ArrowRight")
+                     {
+                         break;
+                     }
+                     console.log("ArrowLeft");
+                     inputDir.x = -1;
+                     inputDir.y = 0;
+                     prev = "ArrowLeft";
+                     break;
+              case "ArrowRight":
+                    if(prev=="ArrowLeft")
+                     {
+                         break;
+                     }
+                     console.log("ArrowRight");
+                     inputDir.x = 1;
+                     inputDir.y = 0;
+                     prev = "ArrowRight";
+                     break;            
+           }
+
+       })
+
+     </script>
+     </body>
+
+ </html>
